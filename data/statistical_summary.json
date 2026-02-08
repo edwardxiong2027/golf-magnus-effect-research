@@ -1,0 +1,22 @@
+{
+  "model_accuracy": {
+    "R_squared": 0.10709108365689168,
+    "MAE_yards": 125.19571552528402,
+    "RMSE_yards": 132.29197392739567,
+    "MAPE_percent": 61.21895834290819
+  },
+  "spin_optimization": {
+    "optimal_spin_170mph": 9444.958468881616,
+    "max_carry_yards": 70.49345857989292,
+    "quadratic_coefficients": [
+      4.19540495163573e-07,
+      -0.007925085105667952,
+      107.91950842258596
+    ]
+  },
+  "spin_axis_sensitivity": {
+    "slope_yards_per_degree": -1.0244523345074699,
+    "r_squared": 0.8525659157204797,
+    "p_value": 8.39663475484125e-18
+  }
+}

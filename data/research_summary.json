@@ -1,0 +1,19 @@
+{
+  "model_validation": {
+    "R_squared": 0.9292194597189369,
+    "MAE_yards": 29.960875414257046,
+    "RMSE_yards": 31.78077069510539,
+    "MAPE_percent": 15.660050863927713
+  },
+  "spin_optimization": {
+    "optimal_spin_170mph": 4800,
+    "optimal_spin_180mph": 4900
+  },
+  "spin_axis": {
+    "sensitivity_yards_per_degree": 1.9459227552570213
+  },
+  "environmental": {
+    "altitude_effect_yards_per_5000ft": 10.743323407184334,
+    "temperature_effect_yards_50F_range": 7.1997419278474695
+  }
+}

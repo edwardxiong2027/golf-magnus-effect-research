@@ -15,10 +15,9 @@ build/
 .ipynb_checkpoints/
 *.ipynb_checkpoints
 
-# Data files (large)
-*.csv
+# Data files (large) - but keep our analysis data
 *.xlsx
-!data/sample_*.csv
+# Keep all CSVs in data folder
 
 # IDE
 .idea/
