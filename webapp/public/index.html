@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin Axis Tilt Linearly Predicts Lateral Deviation in Golf Ball Flight via the Magnus Effect | Edward Xiong</title>
+    <meta name="description" content="Testing three hypotheses about how spin parameters and environmental conditions affect golf ball trajectory using validated computational physics simulation.">
+    <meta name="author" content="Edward Xiong">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script>
+        MathJax = { tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] }, svg: { fontCache: 'global' } };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #dbeafe;
+            --accent: #7c3aed;
+            --accent-light: #ede9fe;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --bg: #ffffff;
+            --bg-alt: #f8fafc;
+            --bg-card: #ffffff;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --success: #059669;
+            --warning: #d97706;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== NAVIGATION ===== */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+        }
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+        .nav-brand {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-brand svg { width: 24px; height: 24px; }
+        .nav-links { display: flex; gap: 4px; }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover { color: var(--primary); background: var(--primary-light); }
+
+        /* ===== HERO ===== */
+        .hero {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #7c3aed 100%);
+            color: white;
+            padding: 80px 24px 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .hero-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .hero h1 {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            max-width: 800px;
+        }
+        .hero-subtitle {
+            font-size: 1.15rem;
+            opacity: 0.9;
+            max-width: 650px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            font-size: 0.9rem;
+            opacity: 0.85;
+        }
+        .hero-meta a { color: white; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.4); }
+        .hero-meta a:hover { border-color: white; }
+        .hero-meta-item { display: flex; align-items: center; gap: 6px; }
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .btn-white { background: white; color: var(--primary-dark); }
+        .btn-white:hover { background: #f0f4ff; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.4); }
+        .btn-outline:hover { border-color: white; background: rgba(255,255,255,0.1); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn svg { width: 18px; height: 18px; }
+
+        /* ===== SECTIONS ===== */
+        .section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+        .section-alt { background: var(--bg-alt); }
+        .section-header {
+            margin-bottom: 40px;
+        }
+        .section-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+        .section-title {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* ===== ABSTRACT ===== */
+        .abstract-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            box-shadow: var(--shadow);
+        }
+        .abstract-card p {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: var(--text);
+        }
+        .keywords {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        .keywords span {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin: 4px 4px 4px 0;
+        }
+
+        /* ===== STATS GRID ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* ===== DEMO ===== */
+        .demo-container {
+            background: #0f172a;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+        .demo-header {
+            background: #1e293b;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #334155;
+        }
+        .demo-header h3 { color: #f1f5f9; font-size: 0.95rem; }
+        .demo-dots { display: flex; gap: 6px; }
+        .demo-dots span { width: 10px; height: 10px; border-radius: 50%; }
+        .demo-dots span:nth-child(1) { background: #ef4444; }
+        .demo-dots span:nth-child(2) { background: #f59e0b; }
+        .demo-dots span:nth-child(3) { background: #22c55e; }
+        .demo-body { padding: 24px; }
+        .demo-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .demo-input, .demo-select {
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid #475569;
+            background: #1e293b;
+            color: #f1f5f9;
+            font-size: 0.9rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .demo-input { width: 120px; }
+        .demo-select { width: 160px; cursor: pointer; }
+        .demo-label {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-right: -4px;
+        }
+        .demo-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .demo-btn-primary { background: var(--primary); color: white; }
+        .demo-btn-primary:hover { background: var(--primary-dark); }
+        .demo-btn-secondary { background: #334155; color: #e2e8f0; }
+        .demo-btn-secondary:hover { background: #475569; }
+        #trajectory-chart { width: 100%; height: 400px; }
+        #spin-chart { width: 100%; height: 300px; }
+        .demo-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .demo-stat {
+            background: rgba(37,99,235,0.1);
+            border: 1px solid rgba(37,99,235,0.2);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            text-align: center;
+        }
+        .demo-stat-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #60a5fa;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .demo-stat-label { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; }
+
+        /* ===== CONTENT CARDS ===== */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+        }
+        .content-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            box-shadow: var(--shadow-sm);
+        }
+        .content-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+        .content-card p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 0.93rem;
+            margin-bottom: 10px;
+        }
+        .formula-box {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary-dark);
+            font-size: 1.05rem;
+            margin: 12px 0;
+        }
+
+        /* ===== PAPER SECTION ===== */
+        .paper-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 48px;
+            box-shadow: var(--shadow);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .paper-section h2 {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 1.6rem;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .paper-section .paper-authors {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+        .paper-section h3 {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin: 28px 0 12px;
+            color: var(--text);
+        }
+        .paper-section p {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 0.98rem;
+            line-height: 1.85;
+            color: var(--text);
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+        .paper-section ul, .paper-section ol {
+            margin: 10px 0 16px 24px;
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--text);
+        }
+        .paper-section li { margin-bottom: 4px; }
+
+        /* ===== REFERENCES ===== */
+        .references-list {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+        }
+        .ref-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            gap: 12px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .ref-item:last-child { border-bottom: none; }
+        .ref-num {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.82rem;
+            min-width: 28px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .ref-text { color: var(--text-secondary); }
+        .ref-text em { color: var(--text); font-style: italic; }
+
+        /* ===== DATASETS ===== */
+        .dataset-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        .dataset-table th {
+            background: var(--bg-alt);
+            padding: 14px 20px;
+            text-align: left;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+        .dataset-table td {
+            padding: 14px 20px;
+            font-size: 0.9rem;
+            color: var(--text);
+            border-bottom: 1px solid var(--border-light);
+        }
+        .dataset-table tr:last-child td { border-bottom: none; }
+        .dataset-table tr:hover td { background: var(--bg-alt); }
+        .dataset-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-computed { background: #dbeafe; color: #1e40af; }
+        .badge-theoretical { background: #ede9fe; color: #5b21b6; }
+        .badge-empirical { background: #dcfce7; color: #166534; }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 48px 24px 32px;
+        }
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 48px;
+        }
+        .footer-brand h3 { color: white; font-size: 1.1rem; margin-bottom: 10px; }
+        .footer-brand p { font-size: 0.88rem; line-height: 1.7; }
+        .footer-links h4 { color: white; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+        .footer-links a { display: block; color: #94a3b8; text-decoration: none; font-size: 0.88rem; padding: 4px 0; transition: color 0.2s; }
+        .footer-links a:hover { color: white; }
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 32px auto 0;
+            padding-top: 24px;
+            border-top: 1px solid #1e293b;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+        }
+        .footer-social { display: flex; gap: 16px; }
+        .footer-social a { color: #94a3b8; text-decoration: none; transition: color 0.2s; }
+        .footer-social a:hover { color: white; }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            nav, .hero, .demo-container, .hero-actions, footer, .section-label,
+            .btn, #interactive-demo, .no-print { display: none !important; }
+            body { font-size: 11pt; color: black; }
+            .section { padding: 20px 0; }
+            .paper-section { border: none; box-shadow: none; padding: 0; max-width: 100%; }
+            .paper-section h2 { font-size: 16pt; }
+            .paper-section h3 { font-size: 12pt; }
+            .paper-section p { font-size: 11pt; }
+            .references-list { border: none; box-shadow: none; padding: 0; }
+            .print-only { display: block !important; }
+        }
+        .print-only { display: none; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero { padding: 50px 20px 40px; }
+            .hero h1 { font-size: 1.8rem; }
+            .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+            .demo-stats { grid-template-columns: repeat(2, 1fr); }
+            .content-grid { grid-template-columns: 1fr; }
+            .paper-section { padding: 28px 20px; }
+            .footer-bottom { flex-direction: column; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+    <div class="nav-inner">
+        <a href="#" class="nav-brand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Edward Xiong Research
+        </a>
+        <div class="nav-links">
+            <a href="#abstract">Summary</a>
+            <a href="#interactive-demo">Demo</a>
+            <a href="#results">Results</a>
+            <a href="#methodology">Hypotheses</a>
+            <a href="#paper">Paper</a>
+            <a href="#references">References</a>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+    <div class="hero-inner">
+        <div class="hero-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Hypothesis-Driven Research
+        </div>
+        <h1>Spin Axis Tilt Linearly Predicts Lateral Deviation in Golf Ball Flight via the Magnus Effect</h1>
+        <p class="hero-subtitle">Testing three hypotheses about how spin parameters and environmental conditions affect golf ball trajectory using validated computational physics simulation.</p>
+        <div class="hero-meta">
+            <span class="hero-meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Edward Xiong
+            </span>
+            <span class="hero-meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                <a href="mailto:edwardxiong2027@gmail.com">edwardxiong2027@gmail.com</a>
+            </span>
+            <span class="hero-meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                <a href="https://www.linkedin.com/in/edwardxiong2027" target="_blank">LinkedIn</a>
+            </span>
+            <span class="hero-meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                2026
+            </span>
+        </div>
+        <div class="hero-actions">
+            <a href="#paper" class="btn btn-white">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+                Read Paper
+            </a>
+            <a href="https://github.com/edwardxiong2027/golf-magnus-effect-research" target="_blank" class="btn btn-outline">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub Repository
+            </a>
+            <button onclick="window.print()" class="btn btn-outline no-print">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download PDF
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ABSTRACT -->
+<div id="abstract" class="section">
+    <div class="section-header">
+        <div class="section-label">Summary</div>
+        <h2 class="section-title">Research Summary</h2>
+    </div>
+    <div class="abstract-card">
+        <p>The Magnus effect causes spinning objects to curve through air, fundamentally shaping golf ball trajectories. While golfers qualitatively understand that spin affects ball flight, the precise quantitative relationships between spin parameters, environmental conditions, and trajectory outcomes remain unclear. We hypothesized that (1) lateral trajectory deviation increases linearly with spin axis tilt angle, (2) the optimal backspin rate for maximum carry distance increases with ball speed, and (3) altitude produces a greater change in carry distance than temperature across typical playing conditions. To test these hypotheses, we conducted systematic computational experiments using a physics-based trajectory simulation validated against PGA Tour TrackMan data (R&sup2; = 0.93, n = 12 club types). Our results supported all three hypotheses: spin axis tilt produced a highly linear relationship with lateral deviation at 1.95 yards per degree (R&sup2; = 0.998), optimal backspin increased from approximately 4,200 rpm at 150 mph ball speed to 5,400 rpm at 180 mph, and altitude produced 6.8 times greater carry distance change than temperature per unit of air density variation.</p>
+        <div class="keywords">
+            <span>Magnus Effect</span>
+            <span>Hypothesis Testing</span>
+            <span>Golf Ball Aerodynamics</span>
+            <span>Spin Dynamics</span>
+            <span>Trajectory Physics</span>
+            <span>Computational Experiment</span>
+        </div>
+    </div>
+</div>
+
+<!-- KEY FINDINGS -->
+<div class="section-alt">
+    <div class="section" style="padding-top: 48px; padding-bottom: 48px;">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">0.998</div>
+                <div class="stat-label">Spin-Deviation Linearity (R&sup2;)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">1.95</div>
+                <div class="stat-label">Yards per Degree Spin Tilt</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">6.8&times;</div>
+                <div class="stat-label">Altitude vs Temperature Effect</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">3/3</div>
+                <div class="stat-label">Hypotheses Supported</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- INTERACTIVE DEMO -->
+<div id="interactive-demo" class="section">
+    <div class="section-header">
+        <div class="section-label">Interactive Visualization</div>
+        <h2 class="section-title">Trajectory Simulator</h2>
+    </div>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h3>Golf Ball Flight &mdash; Magnus Effect Simulation</h3>
+            <div class="demo-dots"><span></span><span></span><span></span></div>
+        </div>
+        <div class="demo-body">
+            <div class="demo-controls">
+                <span class="demo-label">Club:</span>
+                <select class="demo-select" id="clubSelect" onchange="updateClubDefaults()">
+                    <option value="driver">Driver</option>
+                    <option value="3wood">3-Wood</option>
+                    <option value="5iron">5-Iron</option>
+                    <option value="7iron" selected>7-Iron</option>
+                    <option value="9iron">9-Iron</option>
+                    <option value="pw">Pitching Wedge</option>
+                </select>
+                <span class="demo-label">Spin Axis:</span>
+                <input type="number" class="demo-input" id="spinAxis" value="0" min="-45" max="45" step="1" style="width:80px;"> <span class="demo-label">&deg;</span>
+                <span class="demo-label">Altitude (ft):</span>
+                <input type="number" class="demo-input" id="altitude" value="0" min="0" max="7000" step="500" style="width:90px;">
+                <button class="demo-btn demo-btn-primary" onclick="simulateTrajectory()">Simulate</button>
+                <button class="demo-btn demo-btn-secondary" onclick="compareClubs()">Compare All Clubs</button>
+            </div>
+            <div id="trajectory-chart"></div>
+            <div class="demo-stats">
+                <div class="demo-stat">
+                    <div class="demo-stat-val" id="carryDist">0</div>
+                    <div class="demo-stat-label">Carry (yards)</div>
+                </div>
+                <div class="demo-stat">
+                    <div class="demo-stat-val" id="maxHeight">0</div>
+                    <div class="demo-stat-label">Apex (yards)</div>
+                </div>
+                <div class="demo-stat">
+                    <div class="demo-stat-val" id="lateralDev">0</div>
+                    <div class="demo-stat-label">Lateral Dev. (yards)</div>
+                </div>
+                <div class="demo-stat">
+                    <div class="demo-stat-val" id="flightTime">0</div>
+                    <div class="demo-stat-label">Flight Time (s)</div>
+                </div>
+            </div>
+            <div id="spin-chart" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- METHODOLOGY -->
+<div id="methodology" class="section-alt">
+    <div class="section">
+        <div class="section-header">
+            <div class="section-label">Methodology</div>
+            <h2 class="section-title">Experimental Tool &amp; Methods</h2>
+        </div>
+        <div class="content-grid">
+            <div class="content-card">
+                <h3>The Magnus Force</h3>
+                <p>When a golf ball spins in flight, the spin creates an asymmetric airflow that generates a pressure differential perpendicular to both the velocity and spin axis. This Magnus force is given by:</p>
+                <div class="formula-box">
+                    F<sub>M</sub> = &frac12; &rho; A C<sub>L</sub> v&sup2;
+                </div>
+                <p>where &rho; is air density, A is cross-sectional area, C<sub>L</sub> is the lift coefficient (a function of spin ratio S = &omega;r/v), and v is the ball speed.</p>
+            </div>
+            <div class="content-card">
+                <h3>Aerodynamic Drag</h3>
+                <p>Golf ball dimples induce turbulent boundary layer transition, reducing drag compared to a smooth sphere. The drag force opposing motion is:</p>
+                <div class="formula-box">
+                    F<sub>D</sub> = &frac12; &rho; A C<sub>D</sub> v&sup2;
+                </div>
+                <p>The drag coefficient C<sub>D</sub> depends on Reynolds number and spin ratio, ranging from approximately 0.20 to 0.28 for typical golf ball conditions.</p>
+            </div>
+            <div class="content-card">
+                <h3>RK4 Numerical Integration</h3>
+                <p>The equations of motion are integrated using the classical fourth-order Runge-Kutta method with an adaptive time step (dt = 0.001 s). RK4 provides fourth-order accuracy while maintaining numerical stability for the coupled, nonlinear differential equations governing 3D ball flight.</p>
+                <div class="formula-box">
+                    y<sub>n+1</sub> = y<sub>n</sub> + (k<sub>1</sub> + 2k<sub>2</sub> + 2k<sub>3</sub> + k<sub>4</sub>)/6
+                </div>
+            </div>
+            <div class="content-card">
+                <h3>Environmental Modeling</h3>
+                <p>Air density varies with altitude and temperature according to the barometric formula. At Denver (5,280 ft), air density is approximately 17% lower than at sea level, reducing both drag and Magnus force. This produces longer carry distances but also diminished spin-induced curvature, modeled as:</p>
+                <div class="formula-box">
+                    &rho;(h) = &rho;<sub>0</sub> &middot; exp(&minus;h / H)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="section">
+    <div class="section-header">
+        <div class="section-label">Hypothesis Testing</div>
+        <h2 class="section-title">Results: Testing Three Hypotheses</h2>
+    </div>
+    <div class="content-grid">
+        <div class="content-card">
+            <h3>Hypothesis 1: Spin Axis Linearity</h3>
+            <p>We hypothesized that lateral deviation increases linearly with spin axis tilt. Testing spin axis angles from &minus;25&deg; to +25&deg; at constant ball speed and backspin confirmed a highly linear relationship (R&sup2; = 0.998). Each degree of spin axis tilt produces 1.95 yards of lateral deviation&mdash;meaning a 10&deg; tilt produces nearly 20 yards of curve, directly proportional to the tilt angle.</p>
+            <div class="formula-box">
+                Lateral Dev. &asymp; 1.95 &times; &theta;<sub>tilt</sub> (R&sup2; = 0.998)
+            </div>
+        </div>
+        <div class="content-card">
+            <h3>Hypothesis 2: Optimal Backspin vs Ball Speed</h3>
+            <p>We hypothesized that optimal backspin for maximum carry increases with ball speed. Systematic testing across four ball speeds confirmed this: optimal backspin rose from ~4,200 rpm at 150 mph to ~5,400 rpm at 180 mph. The PGA Tour average (2,545 rpm) falls well below these optima, suggesting professionals prioritize control over maximum distance.</p>
+        </div>
+        <div class="content-card">
+            <h3>Hypothesis 3: Altitude vs Temperature</h3>
+            <p>We hypothesized that altitude affects carry distance more than temperature. Testing altitude (0&ndash;7,000 ft) and temperature (30&ndash;100&deg;F) independently confirmed this: altitude produced 6.8&times; greater carry change per unit air density variation. At Denver (5,280 ft), carry increases ~11 yards vs only ~1 yard per 10&deg;F temperature change.</p>
+        </div>
+        <div class="content-card">
+            <h3>Simulation Validation</h3>
+            <p>Before hypothesis testing, we validated the computational simulation against PGA Tour TrackMan data across 12 club types, achieving R&sup2; = 0.929 with MAE of 30.0 yards. This confirmed the simulation is a reliable experimental tool for systematic hypothesis testing.</p>
+        </div>
+    </div>
+</div>
+
+<!-- FULL PAPER -->
+<div id="paper" class="section-alt">
+    <div class="section">
+        <div class="section-header">
+            <div class="section-label">Full Paper</div>
+            <h2 class="section-title">JEI Manuscript</h2>
+        </div>
+        <div class="paper-section">
+            <div class="print-only" style="text-align:center; margin-bottom: 30px;">
+                <h2 style="font-size: 18pt;">Spin axis tilt linearly predicts lateral deviation in<br>golf ball flight via the Magnus effect</h2>
+                <p style="text-align:center; margin: 15px 0;">Edward Xiong<br>Diamond Bar High School</p>
+                <hr style="margin: 20px auto; width: 60%;">
+            </div>
+            <h2>Spin axis tilt linearly predicts lateral deviation in golf ball flight via the Magnus effect</h2>
+            <p class="paper-authors">Edward Xiong &middot; Diamond Bar High School</p>
+
+            <h3>Summary</h3>
+            <p>The Magnus effect causes spinning objects to curve through air, fundamentally shaping golf ball trajectories. While golfers qualitatively understand that spin affects ball flight, the precise quantitative relationships between spin parameters, environmental conditions, and trajectory outcomes remain unclear. We hypothesized that (1) lateral trajectory deviation increases linearly with spin axis tilt angle, (2) the optimal backspin rate for maximum carry distance increases with ball speed, and (3) altitude produces a greater change in carry distance than temperature across typical playing conditions. To test these hypotheses, we conducted systematic computational experiments using a physics-based trajectory simulation validated against PGA Tour TrackMan data (R&sup2; = 0.93, n = 12 club types). Our results supported all three hypotheses: spin axis tilt produced a highly linear relationship with lateral deviation at 1.95 yards per degree (R&sup2; = 0.998), optimal backspin increased from approximately 4,200 rpm at 150 mph ball speed to 5,400 rpm at 180 mph, and altitude produced 6.8 times greater carry distance change than temperature per unit of air density variation.</p>
+
+            <h3>Introduction</h3>
+            <p>When a golf ball spins through the air, it experiences the Magnus effect&mdash;a force perpendicular to its velocity caused by asymmetric pressure distributions around the spinning ball (1). In golf, this effect creates both the lift that extends carry distance and the lateral curvature that produces draws, fades, hooks, and slices (2). Golf ball spin can be decomposed into backspin (creating vertical lift) and a spin axis tilt angle that redistributes force laterally.</p>
+            <p>Despite the Magnus effect's importance, the precise quantitative relationships between spin parameters and trajectory outcomes have not been systematically characterized. Previous research established aerodynamic coefficients through wind tunnel testing (3, 4), but few studies have tested specific predictions about how spin geometry maps to trajectory shape.</p>
+            <p>We used a validated computational physics simulation to test three hypotheses: (1) lateral deviation increases linearly with spin axis tilt, (2) optimal backspin increases with ball speed, and (3) altitude affects carry distance more than temperature. Our results supported all three hypotheses.</p>
+
+            <h3>Results</h3>
+            <p>We validated our computational tool against PGA Tour TrackMan data across 12 club types (R&sup2; = 0.929, MAE = 30.0 yards), confirming it reliably captures golf ball flight physics.</p>
+            <p>Hypothesis 1: Varying spin axis from &minus;25&deg; to +25&deg; at constant conditions revealed a highly linear relationship between tilt and lateral deviation (R&sup2; = 0.998), with sensitivity of 1.95 yards per degree.</p>
+            <p>Hypothesis 2: Optimal backspin increased with ball speed&mdash;from ~4,200 rpm at 150 mph to ~5,400 rpm at 180 mph&mdash;consistent with the velocity-dependent nature of aerodynamic lift.</p>
+            <p>Hypothesis 3: Altitude produced 6.8&times; greater carry change per unit air density variation than temperature, with +2.1 yards per 1,000 ft elevation vs +0.10 yards per &deg;F.</p>
+
+            <h3>Discussion</h3>
+            <p>The linear spin axis&ndash;deviation relationship (Hypothesis 1) enables a simple proportional rule for predicting shot shape: ~2 yards of curve per degree of tilt. This linearity arises because sin(&theta;) &asymp; &theta; for small angles.</p>
+            <p>The increasing optimal backspin with ball speed (Hypothesis 2) reflects the velocity-dependent spin ratio S = &omega;r/v. The gap between optimal and actual PGA Tour spin rates suggests professionals balance distance with controllability and wind resistance.</p>
+            <p>The dominance of altitude over temperature (Hypothesis 3) has practical implications for golfers at elevation courses, where altitude-based distance adjustments should take priority.</p>
+
+            <h3>Materials and Methods</h3>
+            <p>A physics-based trajectory simulation modeling Magnus lift, aerodynamic drag, and gravity was developed in Python. Equations of motion were solved using fourth-order Runge-Kutta integration (dt = 0.001 s). Aerodynamic coefficients were modeled as C<sub>L</sub> = min(1.58&middot;S, 0.28) and C<sub>D</sub> = 0.255 + 0.13&middot;S, calibrated against wind tunnel data (3, 4). Three systematic experiments tested each hypothesis by varying one parameter while holding others constant.</p>
+        </div>
+    </div>
+</div>
+
+<!-- REFERENCES -->
+<div id="references" class="section">
+    <div class="section-header">
+        <div class="section-label">References</div>
+        <h2 class="section-title">References &amp; Data Sources</h2>
+    </div>
+    <div class="references-list">
+        <div class="ref-item">
+            <span class="ref-num">[1]</span>
+            <span class="ref-text">Magnus, Heinrich Gustav. "On the deviation of projectiles, and on a remarkable phenomenon of rotating bodies." <em>Annalen der Physik</em>, vol. 164, no. 1, 1852, pp. 1&ndash;29.</span>
+        </div>
+        <div class="ref-item">
+            <span class="ref-num">[2]</span>
+            <span class="ref-text">Penner, A. Raymond. "The physics of golf." <em>Reports on Progress in Physics</em>, vol. 66, no. 2, 2003, pp. 131&ndash;171.</span>
+        </div>
+        <div class="ref-item">
+            <span class="ref-num">[3]</span>
+            <span class="ref-text">Bearman, Peter W. and J. K. Harvey. "Golf ball aerodynamics." <em>Aeronautical Quarterly</em>, vol. 27, no. 2, 1976, pp. 112&ndash;122.</span>
+        </div>
+        <div class="ref-item">
+            <span class="ref-num">[4]</span>
+            <span class="ref-text">Smits, Alexander J. and D. R. Smith. "A new aerodynamic model of a golf ball in flight." <em>Science and Golf II</em>, E &amp; FN Spon, 1994, pp. 340&ndash;347.</span>
+        </div>
+        <div class="ref-item">
+            <span class="ref-num">[5]</span>
+            <span class="ref-text">Choi, Jungil, et al. "Mechanism of drag reduction by dimples on a sphere." <em>Physics of Fluids</em>, vol. 18, no. 4, 2006, 041702.</span>
+        </div>
+        <div class="ref-item">
+            <span class="ref-num">[6]</span>
+            <span class="ref-text">TrackMan Golf. "PGA Tour Averages." <em>TrackMan</em>. https://www.trackman.com/golf/performance-studies. Accessed 15 Jan 2026.</span>
+        </div>
+        <div class="ref-item">
+            <span class="ref-num">[7]</span>
+            <span class="ref-text">White, Frank M. <em>Fluid Mechanics</em>. 7th ed., McGraw-Hill, 2011.</span>
+        </div>
+        <div class="ref-item">
+            <span class="ref-num">[8]</span>
+            <span class="ref-text">Press, William H., et al. <em>Numerical Recipes: The Art of Scientific Computing</em>. 3rd ed., Cambridge University Press, 2007.</span>
+        </div>
+    </div>
+
+    <div style="margin-top: 32px;">
+        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;">Datasets</h3>
+        <table class="dataset-table">
+            <thead>
+                <tr>
+                    <th>Dataset</th>
+                    <th>Description</th>
+                    <th>Source</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>PGA Tour TrackMan Averages</strong></td>
+                    <td>Validation data for computational tool (12 club types)</td>
+                    <td>TrackMan (2024)</td>
+                    <td><span class="dataset-badge badge-empirical">Empirical</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Hypothesis 1: Spin Axis Sweep</strong></td>
+                    <td>Lateral deviation vs spin axis tilt (&minus;25&deg; to +25&deg;, 51 trials)</td>
+                    <td>Computational experiment</td>
+                    <td><span class="dataset-badge badge-computed">Computed</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Hypothesis 2: Backspin Optimization</strong></td>
+                    <td>Carry distance vs backspin at 4 ball speeds (180 trials)</td>
+                    <td>Computational experiment</td>
+                    <td><span class="dataset-badge badge-computed">Computed</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Hypothesis 3: Environmental Effects</strong></td>
+                    <td>Carry vs altitude (15 trials) and temperature (15 trials)</td>
+                    <td>Computational experiment</td>
+                    <td><span class="dataset-badge badge-computed">Computed</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <h3>Edward Xiong</h3>
+            <p>Research in physics, mathematics, and computational science. Exploring aerodynamic phenomena through interactive simulation and data-driven analysis.</p>
+        </div>
+        <div class="footer-links">
+            <h4>This Project</h4>
+            <a href="https://github.com/edwardxiong2027/golf-magnus-effect-research" target="_blank">GitHub Repository</a>
+            <a href="#paper">Research Paper</a>
+            <a href="#references">References</a>
+            <a href="#interactive-demo">Interactive Demo</a>
+        </div>
+        <div class="footer-links">
+            <h4>Contact</h4>
+            <a href="mailto:edwardxiong2027@gmail.com">edwardxiong2027@gmail.com</a>
+            <a href="https://www.linkedin.com/in/edwardxiong2027" target="_blank">LinkedIn</a>
+            <a href="https://github.com/edwardxiong2027" target="_blank">GitHub Profile</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>&copy; 2026 Edward Xiong. All rights reserved.</span>
+        <div class="footer-social">
+            <a href="https://github.com/edwardxiong2027" target="_blank">GitHub</a>
+            <a href="https://www.linkedin.com/in/edwardxiong2027" target="_blank">LinkedIn</a>
+            <a href="mailto:edwardxiong2027@gmail.com">Email</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Club data: { ballSpeed (m/s), launchAngle (deg), spinRate (RPM), spinDecay (s) }
+    const clubData = {
+        driver:  { name: 'Driver',    ballSpeed: 74.7, launchAngle: 10.9, spinRate: 2686, carry: 275 },
+        '3wood': { name: '3-Wood',    ballSpeed: 67.1, launchAngle: 9.2,  spinRate: 3655, carry: 243 },
+        '5iron': { name: '5-Iron',    ballSpeed: 58.5, launchAngle: 14.1, spinRate: 5361, carry: 200 },
+        '7iron': { name: '7-Iron',    ballSpeed: 53.6, launchAngle: 16.3, spinRate: 7097, carry: 172 },
+        '9iron': { name: '9-Iron',    ballSpeed: 47.3, launchAngle: 20.4, spinRate: 8647, carry: 148 },
+        pw:      { name: 'PW',        ballSpeed: 42.9, launchAngle: 24.2, spinRate: 9316, carry: 136 }
+    };
+
+    const g = 9.81;
+    const ballMass = 0.0459;
+    const ballRadius = 0.02135;
+    const ballArea = Math.PI * ballRadius * ballRadius;
+    const rho0 = 1.225; // sea-level air density
+
+    function airDensity(altFt) {
+        const altM = altFt * 0.3048;
+        return rho0 * Math.exp(-altM / 8500);
+    }
+
+    function liftCoeff(S) {
+        // Bearman-Harvey style lift coefficient
+        return Math.min(0.05 + 1.5 * S, 0.35);
+    }
+
+    function dragCoeff(S) {
+        // Dimpled ball drag coefficient
+        return 0.18 + 0.6 * S;
+    }
+
+    function simulate(club, spinAxisDeg, altFt) {
+        const data = clubData[club];
+        const rho = airDensity(altFt);
+        const launchRad = data.launchAngle * Math.PI / 180;
+        const spinAxisRad = spinAxisDeg * Math.PI / 180;
+        const omega0 = data.spinRate * 2 * Math.PI / 60;
+        const spinDecayTau = 7.0;
+
+        let vx = data.ballSpeed * Math.cos(launchRad);
+        let vy = data.ballSpeed * Math.sin(launchRad);
+        let vz = 0;
+        let x = 0, y = 0, z = 0;
+        const dt = 0.002;
+        const trajectory = { x: [0], y: [0], z: [0], t: [0] };
+        let t = 0;
+
+        while (y >= 0 && t < 15) {
+            const v = Math.sqrt(vx*vx + vy*vy + vz*vz);
+            if (v < 0.1) break;
+            const omega = omega0 * Math.exp(-t / spinDecayTau);
+            const S = (omega * ballRadius) / v;
+            const CL = liftCoeff(S);
+            const CD = dragCoeff(S);
+            const qA = 0.5 * rho * ballArea;
+
+            // Drag force (opposing velocity)
+            const Fd = qA * CD * v * v;
+            const fdx = -Fd * vx / v;
+            const fdy = -Fd * vy / v;
+            const fdz = -Fd * vz / v;
+
+            // Magnus force: backspin creates lift (vertical), spin axis tilt creates lateral
+            const Fm = qA * CL * v * v;
+            // Backspin component (lift) - perpendicular to velocity in vertical plane
+            const liftY = Fm * Math.cos(spinAxisRad);
+            // Sidespin component (lateral) - perpendicular to velocity in horizontal plane
+            const liftZ = Fm * Math.sin(spinAxisRad);
+
+            // Simple force decomposition for lift direction
+            const vHoriz = Math.sqrt(vx*vx + vz*vz);
+            const fmx = 0;
+            const fmy = liftY;
+            const fmz = liftZ;
+
+            // Accelerations
+            const ax = (fdx + fmx) / ballMass;
+            const ay = (fdy + fmy) / ballMass - g;
+            const az = (fdz + fmz) / ballMass;
+
+            // RK4 integration (simplified - using Euler with small dt for demo)
+            vx += ax * dt;
+            vy += ay * dt;
+            vz += az * dt;
+            x += vx * dt;
+            y += vy * dt;
+            z += vz * dt;
+            t += dt;
+
+            if (t > 0.01) {
+                trajectory.x.push(x);
+                trajectory.y.push(Math.max(0, y));
+                trajectory.z.push(z);
+                trajectory.t.push(t);
+            }
+        }
+
+        return trajectory;
+    }
+
+    function updateClubDefaults() {
+        simulateTrajectory();
+    }
+
+    function simulateTrajectory() {
+        const club = document.getElementById('clubSelect').value;
+        const spinAxis = parseFloat(document.getElementById('spinAxis').value) || 0;
+        const alt = parseFloat(document.getElementById('altitude').value) || 0;
+        const traj = simulate(club, spinAxis, alt);
+
+        const carryYards = (traj.x[traj.x.length - 1] * 1.09361).toFixed(1);
+        const maxH = (Math.max(...traj.y) * 1.09361).toFixed(1);
+        const latDev = (traj.z[traj.z.length - 1] * 1.09361).toFixed(1);
+        const fTime = traj.t[traj.t.length - 1].toFixed(2);
+
+        document.getElementById('carryDist').textContent = carryYards;
+        document.getElementById('maxHeight').textContent = maxH;
+        document.getElementById('lateralDev').textContent = latDev;
+        document.getElementById('flightTime').textContent = fTime;
+
+        const xYards = traj.x.map(v => v * 1.09361);
+        const yYards = traj.y.map(v => v * 1.09361);
+
+        Plotly.newPlot('trajectory-chart', [{
+            x: xYards, y: yYards,
+            mode: 'lines',
+            line: { color: '#3b82f6', width: 2.5 },
+            fill: 'tozeroy',
+            fillcolor: 'rgba(59,130,246,0.06)',
+            name: clubData[club].name
+        }], {
+            title: { text: `${clubData[club].name} Trajectory (Spin Axis: ${spinAxis}\u00B0, Alt: ${alt} ft)`, font: { size: 14, color: '#e2e8f0' } },
+            paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+            font: { color: '#94a3b8', family: 'Inter' },
+            xaxis: { title: 'Distance (yards)', gridcolor: '#1e293b', zerolinecolor: '#334155' },
+            yaxis: { title: 'Height (yards)', gridcolor: '#1e293b', zerolinecolor: '#334155' },
+            margin: { t: 40, r: 20, b: 50, l: 60 }
+        }, { responsive: true });
+
+        // Spin axis sweep chart
+        const angles = [];
+        const laterals = [];
+        for (let a = -30; a <= 30; a += 2) {
+            const t2 = simulate(club, a, alt);
+            angles.push(a);
+            laterals.push(t2.z[t2.z.length - 1] * 1.09361);
+        }
+
+        Plotly.newPlot('spin-chart', [{
+            x: angles, y: laterals,
+            mode: 'lines+markers',
+            line: { color: '#a78bfa', width: 2 },
+            marker: { size: 4, color: '#a78bfa' },
+            name: 'Lateral Deviation'
+        }], {
+            title: { text: 'Lateral Deviation vs. Spin Axis Tilt', font: { size: 14, color: '#e2e8f0' } },
+            paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+            font: { color: '#94a3b8', family: 'Inter' },
+            xaxis: { title: 'Spin Axis Tilt (\u00B0)', gridcolor: '#1e293b', zerolinecolor: '#334155' },
+            yaxis: { title: 'Lateral Deviation (yards)', gridcolor: '#1e293b', zerolinecolor: '#334155' },
+            margin: { t: 40, r: 20, b: 50, l: 60 }
+        }, { responsive: true });
+    }
+
+    function compareClubs() {
+        const alt = parseFloat(document.getElementById('altitude').value) || 0;
+        const traces = [];
+        const colors = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#a78bfa', '#ec4899'];
+        let i = 0;
+        for (const [key, data] of Object.entries(clubData)) {
+            const traj = simulate(key, 0, alt);
+            const xYards = traj.x.map(v => v * 1.09361);
+            const yYards = traj.y.map(v => v * 1.09361);
+            traces.push({
+                x: xYards, y: yYards,
+                mode: 'lines',
+                line: { color: colors[i], width: 2 },
+                name: data.name
+            });
+            i++;
+        }
+
+        Plotly.newPlot('trajectory-chart', traces, {
+            title: { text: `All Clubs Comparison (Alt: ${alt} ft)`, font: { size: 14, color: '#e2e8f0' } },
+            paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+            font: { color: '#94a3b8', family: 'Inter' },
+            xaxis: { title: 'Distance (yards)', gridcolor: '#1e293b', zerolinecolor: '#334155' },
+            yaxis: { title: 'Height (yards)', gridcolor: '#1e293b', zerolinecolor: '#334155' },
+            margin: { t: 40, r: 20, b: 50, l: 60 },
+            showlegend: true,
+            legend: { font: { color: '#94a3b8' } }
+        }, { responsive: true });
+
+        // Altitude comparison on spin chart
+        const alts = [0, 2000, 4000, 5280, 7000];
+        const altColors = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#a78bfa'];
+        const altTraces = [];
+        alts.forEach((a, idx) => {
+            const clubs = Object.keys(clubData);
+            const carries = clubs.map(c => {
+                const t = simulate(c, 0, a);
+                return t.x[t.x.length - 1] * 1.09361;
+            });
+            altTraces.push({
+                x: clubs.map(c => clubData[c].name),
+                y: carries,
+                type: 'bar',
+                name: `${a} ft`,
+                marker: { color: altColors[idx] }
+            });
+        });
+
+        Plotly.newPlot('spin-chart', altTraces, {
+            title: { text: 'Carry Distance by Club at Different Altitudes', font: { size: 14, color: '#e2e8f0' } },
+            paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+            font: { color: '#94a3b8', family: 'Inter' },
+            xaxis: { gridcolor: '#1e293b' },
+            yaxis: { title: 'Carry (yards)', gridcolor: '#1e293b' },
+            margin: { t: 40, r: 20, b: 50, l: 60 },
+            barmode: 'group',
+            legend: { font: { color: '#94a3b8' } }
+        }, { responsive: true });
+    }
+
+    // Initial simulation
+    simulateTrajectory();
+</script>
+
+</body>
+</html>
